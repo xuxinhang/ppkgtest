@@ -23,8 +23,8 @@ __ = 0
 class VerilogParser(Parser):
     'Verilog HDL Parser'
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.filename = '__FILE__'
         self.directives = []
         self.default_nettype = 'wire'
@@ -1092,21 +1092,29 @@ class VerilogParser(Parser):
 
     # --------------------------------------------------------------------------
     # Always
-    @__('always', 'ALWAYS', 'senslist', 'always_statement')
+    @__('always', 'ALWAYS', 'always_sens', 'always_statement')
     def p_always(self, p):
         p[0] = Always(p[2], p[3], lineno=1)
 
-    @__('always_ff', 'ALWAYS_FF', 'senslist', 'always_statement')
+    @__('always_ff', 'ALWAYS_FF', 'always_sens', 'always_statement')
     def p_always_ff(self, p):
         p[0] = AlwaysFF(p[2], p[3], lineno=1)
 
-    @__('always_comb', 'ALWAYS_COMB', 'senslist', 'always_statement')
+    @__('always_comb', 'ALWAYS_COMB', 'always_sens', 'always_statement')
     def p_always_comb(self, p):
         p[0] = AlwaysComb(p[2], p[3], lineno=1)
 
-    @__('always_latch', 'ALWAYS_LATCH', 'senslist', 'always_statement')
+    @__('always_latch', 'ALWAYS_LATCH', 'always_sens', 'always_statement')
     def p_always_latch(self, p):
         p[0] = AlwaysLatch(p[2], p[3], lineno=1)
+
+    @__('always_sens', 'senslist')
+    def p_always_sens_senslist(self, p):
+        p[0] = p[1]
+
+    @__('always_sens', 'empty')
+    def p_always_sens_empty(self, p):
+        p[0] = SensList((Sens(None, 'all', lineno=1),), lineno=1)
 
     @__('senslist', 'AT', 'LPAREN', 'edgesigs', 'RPAREN')
     def p_sens_egde_paren(self, p):
@@ -1140,9 +1148,9 @@ class VerilogParser(Parser):
     def p_edgesigs_one(self, p):
         p[0] = (p[1],)
 
-    @__('senslist', 'empty')
-    def p_sens_empty(self, p):
-        p[0] = SensList((Sens(None, 'all', lineno=1),), lineno=1)
+    # @__('senslist', 'empty')
+    # def p_sens_empty(self, p):
+    #     p[0] = SensList((Sens(None, 'all', lineno=1),), lineno=1)
 
     @__('senslist', 'AT', 'levelsig')
     def p_sens_level(self, p):
@@ -1877,7 +1885,8 @@ class VerilogParser(Parser):
 
     # --------------------------------------------------------------------------
     def error(self, p):
-        self._raise_error(p)
+        raise ParseError("%s:" % (p,))
+        # self._raise_error(p)
 
     # --------------------------------------------------------------------------
     def _raise_error(self, p):

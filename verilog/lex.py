@@ -18,10 +18,7 @@
    limitations under the License.
 """
 
-import os
-import sys
 import re
-import time
 from plex import Lexer
 
 
