@@ -1,12 +1,12 @@
 import os
-import time
+import cProfile as profile
 from lex import VerilogLexerPlex as VerilogLexer
 from par import VerilogParser
 
 
 if __name__ == '__main__':
-    # par.grammar.print_analysis_table()
     lex = VerilogLexer(error_func=lambda s: print(s))
+
     with open(os.path.join(__file__, '../verilog_example_1.v')) as fd:
         lex.input(fd.read())
     # lex.input('''
@@ -19,16 +19,26 @@ if __name__ == '__main__':
     # endmodule
     # ''')
 
-    # tokens = []
-    # for t in lex:
-    #     tokens.append(t)
+    pr = profile.Profile()
+    pr.enable()
+    tokens = []
+    for t in lex:
+        tokens.append(t)
+    pr.disable()
+    pr.print_stats()
     # print(f'====== tokens ({len(tokens)}) ======')
     # print(tokens)
 
     par = VerilogParser(debug=True)
-    print(par.grammar.stringify_item_collection(par.grammar._itemcol[213]))
-    print(par.grammar.stringify_item_collection(par.grammar._itemcol[232]))
-    astroot = par.parse(lex)
+    # par.grammar.print_analysis_table()
+    # print(par.grammar.stringify_item_collection(par.grammar._itemcol[213]))
+    # print(par.grammar.stringify_item_collection(par.grammar._itemcol[232]))
+
+    pr = profile.Profile()
+    pr.enable()
+    astroot = par.parse(iter(tokens))
+    pr.disable()
+    pr.print_stats()
 
     astroot.show()
 
