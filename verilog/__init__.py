@@ -1,7 +1,7 @@
 import os
 import cProfile as profile
 from lex import VerilogLexerPlex as VerilogLexer
-from par import VerilogParser
+from par_lalr import VerilogParser
 
 
 if __name__ == '__main__':
